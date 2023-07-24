@@ -1,0 +1,11 @@
+name: Deploy
+
+on:
+    push:
+        branches: ["master"]
+
+jobs:
+    my_buld_job:
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo Hello
