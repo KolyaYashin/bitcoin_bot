@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 from binance.client import Client
 from config import SECRET_KEY, API_KEY
-from sklearn.linear_model import Ridge, Lasso
-from xgboost import XGBRegressor
+from sklearn.linear_model import Lasso
+from sklearn.ensemble import RandomForestRegressor
 
 
 
@@ -72,7 +72,7 @@ def extract_and_fit(interval: str, delta_weeks: int):
     X=X_time_trend.copy()
     linear, lin_curr = check_model_full(Lasso(max_iter=1000), X_time_trend, y, X_current)
     X['linear_trend'] = linear
-    tree, tree_curr = check_model_full(XGBRegressor(n_estimators=2, max_depth=4, learning_rate=1), X_time_trend, y, X_current)
+    tree, tree_curr = check_model_full(RandomForestRegressor(n_estimators=2, max_depth=4), X_time_trend, y, X_current)
     X['tree_trend'] = tree
     X['trades'] = df.trades
     X_current['linear_trend'] = lin_curr
