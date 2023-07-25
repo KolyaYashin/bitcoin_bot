@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 import warnings
 import seaborn as sns
 from create_bot import bot
+from aiogram.types import FSInputFile
 
 warnings.filterwarnings('ignore')
 
@@ -42,8 +43,9 @@ async def show_prices_text(current,msg:Message, count,hour=0.5):
             _lags[str((now-(i-1)*delta).time())] = current[f"lag_{i}h"].iloc[0]
         await msg.answer(message)
         _lags[str((now+delta).time())] = predicted_value
-        sns.lineplot(pd.Series(_lags).iloc[:-1])
-        plot_2 = sns.lineplot(pd.Series(_lags).iloc[-2:],color='red')
+        lags=pd.Series(_lags)
+        sns.lineplot(x = pd.to_datetime(lags.iloc[:-1].index), y = lags.iloc[:-1])
+        plot_2 = sns.lineplot(x = pd.to_datetime(lags.iloc[-2:].index), y = lags.iloc[-2:], color='red')
         plot_2.figure.savefig('fig.jpg')
 
 
@@ -57,7 +59,7 @@ async def rate(msg: Message):
     current_price, predicted_value = extract_and_fit('30m',16)
     end = dt.datetime.now()
     await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
-    await show_prices_text(current_price, msg, 8)
+    await show_prices_text(current_price, msg, 10)
 
 
 
@@ -79,8 +81,8 @@ async def predict(msg: Message):
 
 @router.message(Command(commands=['visualize']))
 async def visualize(msg: Message):
-    photo=open('fig.jpg','rb')
-    await msg.answer_photo('fig.jpg')
+    photo=FSInputFile('fig.jpg')
+    await msg.answer_photo(photo)
 
 
 
