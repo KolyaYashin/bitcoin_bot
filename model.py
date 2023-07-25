@@ -70,13 +70,14 @@ def extract_and_fit(interval: str, delta_weeks: int):
     days=1
     mov_av_d, mov_var_d = plotMovingAverage(y,int(48*days))
     X=X_time_trend.copy()
-    X['trades'] = (df['trades'] - df['trades'].mean())/df.trades.std()
     linear, lin_curr = check_model_full(Lasso(max_iter=1000), X_time_trend, y, X_current)
     X['linear_trend'] = linear
     tree, tree_curr = check_model_full(XGBRegressor(n_estimators=2, max_depth=4, learning_rate=1), X_time_trend, y, X_current)
     X['tree_trend'] = tree
+    X['trades'] = df.trades
     X_current['linear_trend'] = lin_curr
     X_current['tree_trend'] = tree_curr
+    X_current['trades'] = df.trades.mean()
     X['moving_average_weekly'] = mov_av_w
     X_current['moving_average_weekly'] = y[len(y)-48*7:].mean()
     X['moving_average_daily'] = mov_av_d
@@ -102,10 +103,15 @@ def extract_and_fit(interval: str, delta_weeks: int):
     X=add_lags(X)
     for k in range(1,24+1):
         X_current[f'lag_{k}h'] = y[-k]
-    best_model = Ridge(alpha=50, max_iter=5000)
+    best_model = Lasso(alpha=5, max_iter=5000)
     X['y'] = y
     X = X.dropna().drop(['trend_4','time'],axis=1)
+    X_current = X_current.drop(['trend_4'],axis=1)
     y = X['y']
     X = X.drop('y',axis=1)
     best_model.fit(X,y)
+    """
+    print(X.columns)
+    print(X_current.columns)
+    """
     return best_model, X_current
