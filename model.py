@@ -114,4 +114,5 @@ def extract_and_fit(interval: str, delta_weeks: int):
     print(X.columns)
     print(X_current.columns)
     """
-    return best_model, X_current
+    predicted_value = best_model.predict(X_current)[0]
+    return X_current, predicted_value

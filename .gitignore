@@ -2,3 +2,5 @@ __pycache__/
 venv
 constant.py
 config.py
+*.jpg
+*.png
