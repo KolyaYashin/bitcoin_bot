@@ -48,6 +48,17 @@ async def show_prices_text_old(current,msg:Message, count,hour=0.5):
         plot_2 = sns.lineplot(x = pd.to_datetime(lags.iloc[-2:].index), y = lags.iloc[-2:], color='red')
         plot_2.figure.savefig('fig_old.jpg')
 
+async def show_prices(y,msg: Message, count):
+    sns.set()
+    message = f'Курс BTC-USD за прошлые {count/12} часов:\n'
+    for j,i in enumerate(reversed(y.iloc[-count-6:-6].index)):
+        if j%6==0:
+            message+=f'Курс за {str(i)}: {y[i]}\n'
+    await msg.answer(message)
+    sns.lineplot(y.iloc[-6-count:-6])
+    plot_2 = sns.lineplot(y.iloc[-7:])
+    plot_2.figure.savefig('fig.jpg')
+
 
 
 @router.message(Command(commands=['get_old']))
@@ -65,9 +76,10 @@ async def rate(msg: Message):
 async def rate_new(msg: Message):
     await msg.answer('Собираю и обрабатываю данные...')
     start = dt.datetime.now()
-    extract_data()
+    y=extract_data()
     end = dt.datetime.now()
     await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
+    await show_prices(y,msg,12*5)
 
 
 
@@ -92,6 +104,11 @@ async def visualize(msg: Message):
     photo=FSInputFile('fig_old.jpg')
     await msg.answer_photo(photo)
 
+
+@router.message(Command(commands=['visualize']))
+async def visualize(msg: Message):
+    photo=FSInputFile('fig.jpg')
+    await msg.answer_photo(photo)
 
 
 @router.message(Command(commands=['settings']))

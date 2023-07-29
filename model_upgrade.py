@@ -6,6 +6,7 @@ from config import SECRET_KEY, API_KEY
 from sklearn.linear_model import Lasso, Ridge, LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 
+
 api_key='hKmlFuyZiyNlaN6ARvCKnhF5owS6yrVJolMeSBfThE5Hc6L26aRM2Z3N8EuVQf0y'
 secret_key='B4c5Cr9vwsubR19XK05axHk6aSGhnP91GdXLY57LlaYoUNMf4s5egKIHhtgfJYAd'
 client = Client(api_key, secret_key)
@@ -163,9 +164,11 @@ def extract_data():
             X_new[f'lag_{i}'] = [y.iloc[-i]]
         return X_new
 
+    print(y.tail(10))
     for i in range(6):
         X_new = get_new(X,y,y_df30)
         y_new = pd.Series(best_model.predict(X_new),index=[y.index[-1]+dt.timedelta(minutes=5)])
         X=pd.concat([X,X_new])
         y=pd.concat([y,y_new])
+    print(y.tail(10))
     return y
