@@ -7,7 +7,7 @@ from config import ALLOW_USERS
 from model import extract_and_fit
 from model import dt
 from model import pd
-from matplotlib import pyplot as plt
+from model_upgrade import extract_data
 import warnings
 import seaborn as sns
 from create_bot import bot
@@ -27,10 +27,10 @@ async def start(msg: Message):
     await msg.answer(ru['start_welcome'])
 
 
-async def show_prices_text(current,msg:Message, count,hour=0.5):
+async def show_prices_text_old(current,msg:Message, count,hour=0.5):
     sns.set()
     if hour==0.5:
-        message = f'Курс BTC-USD за прошлые {count*hour} часа:\n'
+        message = f'Курс BTC-USD за прошлые {count*hour} часов:\n'
         now = dt.datetime.now()
         if now.minute>=30:
             now = now.replace(minute=30,second=0,microsecond=0)
@@ -44,13 +44,13 @@ async def show_prices_text(current,msg:Message, count,hour=0.5):
         await msg.answer(message)
         _lags[str((now+delta).time())] = predicted_value
         lags=pd.Series(_lags)
-        sns.lineplot(x = pd.to_datetime(lags.iloc[:-1].index), y = lags.iloc[:-1])
+        sns.lineplot(x = pd.to_datetime(lags.iloc[:-1].index), y = lags.iloc[:-1],color="blue")
         plot_2 = sns.lineplot(x = pd.to_datetime(lags.iloc[-2:].index), y = lags.iloc[-2:], color='red')
-        plot_2.figure.savefig('fig.jpg')
+        plot_2.figure.savefig('fig_old.jpg')
 
 
 
-@router.message(Command(commands=['get']))
+@router.message(Command(commands=['get_old']))
 async def rate(msg: Message):
     global current_price
     global predicted_value
@@ -59,7 +59,15 @@ async def rate(msg: Message):
     current_price, predicted_value = extract_and_fit('30m',16)
     end = dt.datetime.now()
     await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
-    await show_prices_text(current_price, msg, 10)
+    await show_prices_text_old(current_price, msg, 10)
+
+@router.message(Command(commands='get'))
+async def rate_new(msg: Message):
+    await msg.answer('Собираю и обрабатываю данные...')
+    start = dt.datetime.now()
+    extract_data()
+    end = dt.datetime.now()
+    await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
 
 
 
@@ -79,9 +87,9 @@ async def predict(msg: Message):
 
 
 
-@router.message(Command(commands=['visualize']))
+@router.message(Command(commands=['visualize_old']))
 async def visualize(msg: Message):
-    photo=FSInputFile('fig.jpg')
+    photo=FSInputFile('fig_old.jpg')
     await msg.answer_photo(photo)
 
 
