@@ -12,6 +12,7 @@ import warnings
 import seaborn as sns
 from create_bot import bot
 from aiogram.types import FSInputFile
+from matplotlib.pyplot import clf
 
 warnings.filterwarnings('ignore')
 
@@ -45,8 +46,14 @@ async def show_prices_text_old(current,msg:Message, count,hour=0.5):
         _lags[str((now+delta).time())] = predicted_value
         lags=pd.Series(_lags)
         sns.lineplot(x = pd.to_datetime(lags.iloc[:-1].index), y = lags.iloc[:-1],color="blue")
+        try:
+            sns.lineplot(y.iloc[-6-count*6:-6])
+            plot_2 = sns.lineplot(y.iloc[-7:])
+        except NameError:
+            pass
         plot_2 = sns.lineplot(x = pd.to_datetime(lags.iloc[-2:].index), y = lags.iloc[-2:], color='red')
         plot_2.figure.savefig('fig_old.jpg')
+        clf()
 
 async def show_prices(y,msg: Message, count):
     sns.set()
@@ -58,6 +65,7 @@ async def show_prices(y,msg: Message, count):
     sns.lineplot(y.iloc[-6-count:-6])
     plot_2 = sns.lineplot(y.iloc[-7:])
     plot_2.figure.savefig('fig.jpg')
+    clf()
 
 
 
