@@ -71,20 +71,24 @@ async def rate(msg: Message):
     end = dt.datetime.now()
     await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
     await show_prices_text_old(current_price, msg, 10)
+    await msg.answer('Теперь вы можете нажать либо /predict_old, либо /visualize_old')
 
 @router.message(Command(commands='get'))
 async def rate_new(msg: Message):
     await msg.answer('Собираю и обрабатываю данные...')
     start = dt.datetime.now()
+    global y
     y=extract_data()
     end = dt.datetime.now()
     await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
     await show_prices(y,msg,12*5)
+    await msg.answer('Теперь вы можете нажать либо /predict, либо /visualize')
 
 
 
 
-@router.message(Command(commands=['predict']))
+
+@router.message(Command(commands=['predict_old']))
 async def predict(msg: Message):
     try:
         new_price = predicted_value
@@ -96,6 +100,23 @@ async def predict(msg: Message):
     except NameError:
         await msg.answer('Вы ещё не получили данные. Нажмите /get')
 
+
+@router.message(Command(commands=['predict']))
+async def predict_price(msg: Message):
+    try:
+        old_price = y.iloc[-7]
+        new_price = y.iloc[-1]
+        message = 'Ожидаемый курс на следующие полчаса:\n'
+        for i in range(1,7):
+            message+=f'Предсказанная цена за {y.index[-i]} - {y.iloc[-i]}.\n'
+        if new_price>old_price:
+            message+=f'За полчаса произошло повышение на {(new_price/old_price-1)*100} процентов.'
+        else:
+            message+=f'За полчаса произошло понижение на {-(new_price/old_price-1)*100} процентов.'
+        await msg.answer(message)
+
+    except NameError:
+        await msg.answer('Вы ещё не получили данные. Нажмите /get')
 
 
 

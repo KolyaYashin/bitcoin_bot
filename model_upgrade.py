@@ -4,7 +4,7 @@ import pandas as pd
 from binance.client import Client
 from config import SECRET_KEY, API_KEY
 from sklearn.linear_model import Lasso, Ridge, LinearRegression
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, StackingRegressor
 
 
 api_key='hKmlFuyZiyNlaN6ARvCKnhF5owS6yrVJolMeSBfThE5Hc6L26aRM2Z3N8EuVQf0y'
@@ -104,6 +104,7 @@ def extract_data():
     X['day_of_month'] = dayofmonth
     X['day_of_week'] = dayofweek
     X['hour_of_day'] = hourofday
+    '''
     time = np.arange(len(X))
     freq=365.25*24
     order=4
@@ -111,6 +112,7 @@ def extract_data():
     for i in range(1,order+1):
         X[f'sin_{i}'] = np.sin(i*k)
         X[f'cos_{i}'] = np.cos(i*k)
+    '''
 
     for i in range(1,72+1):
         X[f'lag_{i}'] = X.open.shift(i)
@@ -119,7 +121,7 @@ def extract_data():
     y=X.open
     X=X.drop('open',axis=1)
 
-    best_model = Ridge(alpha=50, max_iter=5000)
+    best_model = Lasso(alpha=5,max_iter=5000)
 
     best_model.fit(X,y)
     def get_new(X,y,y_df30):
@@ -152,23 +154,31 @@ def extract_data():
             X_new['hour_of_day'] = [X['hour_of_day'].iloc[-1]]
         else:
             X_new['hour_of_day'] = [(X['hour_of_day'].iloc[-1]+1)%24]
+        '''
         freq = 365.25*24
         order = 4
-        time = X.time.iloc[-1]
+        time = len(X)+72+1
         k =  2 * np.pi * (1 / freq) * time
         for i in range(1,order+1):
             X_new[f'sin_{i}'] = np.sin(i*k)
             X_new[f'cos_{i}'] = np.cos(i*k)
-
+        '''
         for i in range(1,72+1):
             X_new[f'lag_{i}'] = [y.iloc[-i]]
         return X_new
 
-    print(y.tail(10))
-    for i in range(6):
+    X_new = get_new(X,y,y_df30)
+    y_new = pd.Series(best_model.predict(X_new),index=[y.index[-1]+dt.timedelta(minutes=5)])
+    X=pd.concat([X,X_new])
+    y=pd.concat([y,y_new])
+    '''
+    print(X.tail(4))
+    for i in X_new.columns:
+        print(f'{i}: {X_new[i][0]}')
+    '''
+    for i in range(5):
         X_new = get_new(X,y,y_df30)
         y_new = pd.Series(best_model.predict(X_new),index=[y.index[-1]+dt.timedelta(minutes=5)])
         X=pd.concat([X,X_new])
         y=pd.concat([y,y_new])
-    print(y.tail(10))
     return y
