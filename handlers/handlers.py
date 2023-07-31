@@ -46,6 +46,7 @@ async def show_prices_text_old(current,msg:Message, count,hour=0.5):
         await msg.answer(message)
         _lags[str((now+delta).time())] = predicted_value
         lags=pd.Series(_lags)
+        lags.index = pd.to_datetime(lags.index)
         print(lags.index)
         sns.lineplot(x = pd.to_datetime(lags.iloc[:-1].index), y = lags.iloc[:-1],color="blue")
         try:
