@@ -47,7 +47,6 @@ async def show_prices_text_old(current,msg:Message, count,hour=0.5):
         _lags[str((now+delta).time())] = predicted_value
         lags=pd.Series(_lags)
         lags.index = pd.to_datetime(lags.index)
-        print(lags.index)
         sns.lineplot(x = pd.to_datetime(lags.iloc[:-1].index), y = lags.iloc[:-1],color="blue")
         try:
             sns.lineplot(y.iloc[-6-count*6:-6])
@@ -66,7 +65,6 @@ async def show_prices(y,msg: Message, count):
             message+=f'Курс за {str(i)}: {y[i]}\n'
     await msg.answer(message)
     sns.lineplot(y.iloc[-6-count:-6])
-    print(y.iloc[-6-count:].index)
     plot_2 = sns.lineplot(y.iloc[-7:])
     plot_2.figure.savefig('fig.jpg')
     clf()
