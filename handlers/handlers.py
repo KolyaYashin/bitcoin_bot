@@ -10,9 +10,10 @@ from model import pd
 from model_upgrade import extract_data
 import warnings
 import seaborn as sns
-from create_bot import bot
 from aiogram.types import FSInputFile
 from matplotlib.pyplot import clf
+from settings import id2settings
+
 
 warnings.filterwarnings('ignore')
 
