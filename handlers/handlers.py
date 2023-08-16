@@ -78,7 +78,7 @@ async def rate(msg: Message):
     global predicted_value
     await msg.answer('Собираю и обрабатываю данные...')
     start = dt.datetime.now()
-    current_price, predicted_value = extract_and_fit('30m',16)
+    current_price, predicted_value = extract_and_fit('30m',16,id2settings[msg.from_user.id]['pair'])
     end = dt.datetime.now()
     await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
     await show_prices_text_old(current_price, msg, 10)
@@ -89,7 +89,7 @@ async def rate_new(msg: Message):
     await msg.answer('Собираю и обрабатываю данные...')
     start = dt.datetime.now()
     global y
-    y=extract_data()
+    y=extract_data(id2settings[msg.from_user.id]['pair'])
     end = dt.datetime.now()
     await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
     await show_prices(y,msg,12*5)
@@ -125,7 +125,6 @@ async def predict_price(msg: Message):
         else:
             message+=f'За полчаса произошло понижение на {-(new_price/old_price-1)*100} процентов.'
         await msg.answer(message)
-
     except NameError:
         await msg.answer('Вы ещё не получили данные. Нажмите /get')
 
@@ -145,4 +144,5 @@ async def visualize(msg: Message):
 
 @router.message(Command(commands=['settings']))
 async def settings(msg: Message):
+
     await msg.answer(ru['settings'])

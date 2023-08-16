@@ -8,7 +8,6 @@ from sklearn.ensemble import RandomForestRegressor
 
 
 
-
 def plotMovingAverage(
     series, window
 ):

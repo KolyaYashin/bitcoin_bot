@@ -113,7 +113,6 @@ def extract_data(pair):
         X[f'sin_{i}'] = np.sin(i*k)
         X[f'cos_{i}'] = np.cos(i*k)
     '''
-
     for i in range(1,72+1):
         X[f'lag_{i}'] = X.open.shift(i)
 
@@ -166,11 +165,6 @@ def extract_data(pair):
         for i in range(1,72+1):
             X_new[f'lag_{i}'] = [y.iloc[-i]]
         return X_new
-    '''
-    print(X.tail(4))
-    for i in X_new.columns:
-        print(f'{i}: {X_new[i][0]}')
-    '''
     for i in range(6):
         X_new = get_new(X,y,y_df30)
         y_new = pd.Series(best_model.predict(X_new),index=[y.index[-1]+dt.timedelta(minutes=5)])
