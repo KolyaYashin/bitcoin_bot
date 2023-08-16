@@ -8,7 +8,7 @@ if __name__=='__main__':
     for id in ALLOW_USERS:
         if not (id in id2settings):
             id2settings[id]={}
-            id2settings[id]['pair'] = 'BTC/USDT'
+            id2settings[id]['pair'] = 'BTCUSDT'
             id2settings[id]['state'] = 'in_menu'
     dp.startup.register(set_main_menu)
     dp.include_router(router=router)

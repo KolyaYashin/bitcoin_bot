@@ -1,6 +1,6 @@
 from aiogram import Router
-from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram.filters import Command, Text
+from aiogram.types import Message, CallbackQuery
 from lexicon.lexicon_ru import LEXICON_RU as ru
 import filters.filters as f
 from config import ALLOW_USERS
@@ -13,6 +13,8 @@ import seaborn as sns
 from aiogram.types import FSInputFile
 from matplotlib.pyplot import clf
 from settings import id2settings
+from keyboard.buttons import settings_keyboard
+from settings import every_pair_set, usdt_pairs_set
 
 
 warnings.filterwarnings('ignore')
@@ -121,9 +123,9 @@ async def predict_price(msg: Message):
         for i in range(1,7):
             message+=f'Предсказанная цена за {y.index[-i]} - {y.iloc[-i]}.\n'
         if new_price>old_price:
-            message+=f'За полчаса произошло повышение на {(new_price/old_price-1)*100} процентов.'
+            message+=f'За полчаса произойдёт повышение на {(new_price/old_price-1)*100} процентов.'
         else:
-            message+=f'За полчаса произошло понижение на {-(new_price/old_price-1)*100} процентов.'
+            message+=f'За полчаса произойдёт понижение на {-(new_price/old_price-1)*100} процентов.'
         await msg.answer(message)
     except NameError:
         await msg.answer('Вы ещё не получили данные. Нажмите /get')
@@ -144,5 +146,22 @@ async def visualize(msg: Message):
 
 @router.message(Command(commands=['settings']))
 async def settings(msg: Message):
+    await msg.answer(ru['settings'], reply_markup = settings_keyboard)
 
-    await msg.answer(ru['settings'])
+
+@router.callback_query(Text(text=['to_pair_change']))
+async def pair_change(callback: CallbackQuery):
+    id2settings[callback.from_user.id]['state'] = 'in_pair_change'
+    await callback.message.answer('Напишите валютную пару, на которую хотите изменить. Сейчас выбрана - '
+                                f'{id2settings[callback.from_user.id]["pair"]}.')
+    await callback.answer()
+
+
+@router.message(f.InPairChange(id2settings))
+async def in_pair_change(message: Message):
+    new_pair = message.text.upper()
+    if new_pair in every_pair_set:
+        id2settings[message.from_user.id]['pair'] = new_pair
+        await message.answer('Новая валютная пара успешно добавлена!')
+    else:
+        await message.answer('Такой пары нет(\n Нажмите на /all_pairs или /usdt_pairs чтобы посмотреть список доступных пар')
