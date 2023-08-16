@@ -36,7 +36,7 @@ async def show_prices_text_old(current,msg:Message, count,hour=0.5):
     if hour==0.5:
         message = f'Курс BTC-USD за прошлые {count*hour} часов:\n'
         now = dt.datetime.now()
-        now = now + dt.timedelta(hours=3)
+        #now = now + dt.timedelta(hours=3)
         if now.minute>=30:
             now = now.replace(minute=30,second=0,microsecond=0)
         else:
