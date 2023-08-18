@@ -40,7 +40,7 @@ def add_lags(X, interval='1h',count=24):
             X_copy[f'lag_{i}'] = y.shift(i)
     return X_copy
 
-def extract_and_fit(interval: str, delta_weeks: int, pair:str):
+async def extract_and_fit(interval: str, delta_weeks: int, pair:str):
     client = Client(API_KEY, SECRET_KEY)
     df= pd.DataFrame(client.get_historical_klines(pair,interval,
                                                 str((dt.datetime.now() - dt.timedelta(weeks=delta_weeks))),

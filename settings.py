@@ -5,14 +5,14 @@ client = Client(API_KEY, SECRET_KEY)
 
 exchange_info = client.get_exchange_info()
 
-every_pair_set = set([])
-usdt_pairs_set = set([])
+every_pair_set = []
+usdt_pairs_set = []
 
 for s in exchange_info['symbols']:
     symbol = s['symbol']
-    every_pair_set.add(symbol)
+    every_pair_set.append(symbol)
     if symbol.endswith('USDT'):
-        usdt_pairs_set.add(symbol)
+        usdt_pairs_set.append(symbol)
 
 
 id2settings = {}

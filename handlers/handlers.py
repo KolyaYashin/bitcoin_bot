@@ -80,7 +80,7 @@ async def rate(msg: Message):
     global predicted_value
     await msg.answer('Собираю и обрабатываю данные...')
     start = dt.datetime.now()
-    current_price, predicted_value = extract_and_fit('30m',16,id2settings[msg.from_user.id]['pair'])
+    current_price, predicted_value = await extract_and_fit('30m',16,id2settings[msg.from_user.id]['pair'])
     end = dt.datetime.now()
     await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
     await show_prices_text_old(current_price, msg, 10)
@@ -91,7 +91,7 @@ async def rate_new(msg: Message):
     await msg.answer('Собираю и обрабатываю данные...')
     start = dt.datetime.now()
     global y
-    y=extract_data(id2settings[msg.from_user.id]['pair'])
+    y=await extract_data(id2settings[msg.from_user.id]['pair'])
     end = dt.datetime.now()
     await msg.answer('Затратилось времени на сбор данных: '+str(end-start))
     await show_prices(y,msg,12*5)
@@ -156,10 +156,18 @@ async def pair_change(callback: CallbackQuery):
                                 f'{id2settings[callback.from_user.id]["pair"]}.')
     await callback.answer()
 
+@router.message(Command(commands=['all_pairs','usdt_pairs']))
+async def show_list(msg: Message):
+    if msg.text.split('/')[0]=='all_pairs':
+        await msg.answer('Первые 20 пар:\n'+'\n'.join(every_pair_set[:20]))
+    else:
+        await msg.answer('Первые 20 пар:\n'+'\n'.join(usdt_pairs_set[:20]))
+
 
 @router.message(f.InPairChange(id2settings))
 async def in_pair_change(message: Message):
     new_pair = message.text.upper()
+    id2settings[message.from_user.id]['state'] = 'in_menu'
     if new_pair in every_pair_set:
         id2settings[message.from_user.id]['pair'] = new_pair
         await message.answer('Новая валютная пара успешно добавлена!')

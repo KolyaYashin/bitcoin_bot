@@ -11,7 +11,7 @@ api_key='hKmlFuyZiyNlaN6ARvCKnhF5owS6yrVJolMeSBfThE5Hc6L26aRM2Z3N8EuVQf0y'
 secret_key='B4c5Cr9vwsubR19XK05axHk6aSGhnP91GdXLY57LlaYoUNMf4s5egKIHhtgfJYAd'
 client = Client(api_key, secret_key)
 
-def extract_data(pair):
+async def extract_data(pair):
     def get_df(interval, weeks):
         df= pd.DataFrame(client.get_historical_klines(pair,interval,
                                                     str((dt.datetime.now() - dt.timedelta(weeks=weeks))),
