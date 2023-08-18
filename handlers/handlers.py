@@ -15,7 +15,8 @@ from matplotlib.pyplot import clf
 from settings import id2settings
 from keyboard.buttons import settings_keyboard
 from settings import every_pair_set, usdt_pairs_set
-
+import asyncio
+from create_bot import bot
 
 warnings.filterwarnings('ignore')
 
@@ -29,6 +30,25 @@ async def permission_denied(msg: Message):
 @router.message(Command(commands=['start']))
 async def start(msg: Message):
     await msg.answer(ru['start_welcome'])
+
+@router.message(Command(commands=['go']))
+async def go(msg:Message):
+    while True:
+        minutes = 30
+        global y
+        y=await extract_data(id2settings[msg.from_user.id]['pair'])
+        draw_figure('fig.jpg',12*5,6)
+        old_price = y.iloc[-7]
+        new_price = y.iloc[-1]
+        change_percent = (1-new_price/old_price)*100
+        change_percent_abs = abs(change_percent)
+        if change_percent_abs>id2settings[msg.from_user.id]['threshold']:
+            for id in ALLOW_USERS:
+                if change_percent<0:
+                    await bot.send_message(id,f'В ближайшие полчаса ожидается повышение на {change_percent:.{3}} процентов')
+                else:
+                    await bot.send_message(id,f'В ближайшие полчаса ожидается понижение на {change_percent:.{3}} процентов')
+        await asyncio.sleep(minutes*60-15)
 
 
 async def show_prices_text_old(current,msg:Message, count,hour=0.5):
@@ -60,6 +80,14 @@ async def show_prices_text_old(current,msg:Message, count,hour=0.5):
         plot_2.figure.savefig('fig_old.jpg')
         clf()
 
+
+def draw_figure(name,count,predict_count):
+    sns.lineplot(y.iloc[-predict_count-count:-predict_count])
+    plot_2 = sns.lineplot(y.iloc[-predict_count-1:])
+    plot_2.figure.savefig(name)
+    clf()
+
+
 async def show_prices(y,msg: Message, count):
     sns.set()
     message = f'Курс BTC-USD за прошлые {count/12} часов:\n'
@@ -67,10 +95,7 @@ async def show_prices(y,msg: Message, count):
         if j%6==0:
             message+=f'Курс за {str(i)}: {y[i]}\n'
     await msg.answer(message)
-    sns.lineplot(y.iloc[-6-count:-6])
-    plot_2 = sns.lineplot(y.iloc[-7:])
-    plot_2.figure.savefig('fig.jpg')
-    clf()
+    draw_figure('fig.jpg',count,6)
 
 
 
@@ -97,7 +122,10 @@ async def rate_new(msg: Message):
     await show_prices(y,msg,12*5)
     await msg.answer('Теперь вы можете нажать либо /predict, либо /visualize')
 
-
+@router.message(Command(commands=['show']))
+async def show(msg: Message):
+    await show_prices(y,msg,12*5)
+    await msg.answer('Теперь вы можете нажать либо /predict, либо /visualize')
 
 
 
