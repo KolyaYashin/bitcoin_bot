@@ -11,7 +11,7 @@ if __name__=='__main__':
             id2settings[id]={}
             id2settings[id]['pair'] = 'BTCUSDT'
             id2settings[id]['state'] = 'in_menu'
-            id2settings[id]['threshold'] = 0.35
+            id2settings[id]['threshold'] = 0.2
     dp.startup.register(set_main_menu)
     dp.include_router(router=router)
     dp.run_polling(bot)

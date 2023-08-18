@@ -124,8 +124,12 @@ async def rate_new(msg: Message):
 
 @router.message(Command(commands=['show']))
 async def show(msg: Message):
-    await show_prices(y,msg,12*5)
-    await msg.answer('Теперь вы можете нажать либо /predict, либо /visualize')
+    try:
+        await show_prices(y,msg,12*5)
+        await msg.answer('Теперь вы можете нажать либо /predict, либо /visualize')
+    except NameError:
+        await msg.answer('Вы ещё не получили данные. Нажмите /get')
+
 
 
 
@@ -184,12 +188,12 @@ async def pair_change(callback: CallbackQuery):
                                 f'{id2settings[callback.from_user.id]["pair"]}.')
     await callback.answer()
 
-@router.message(Command(commands=['all_pairs','usdt_pairs']))
-async def show_list(msg: Message):
-    if msg.text.split('/')[0]=='all_pairs':
-        await msg.answer('Первые 20 пар:\n'+'\n'.join(every_pair_set[:20]))
-    else:
-        await msg.answer('Первые 20 пар:\n'+'\n'.join(usdt_pairs_set[:20]))
+@router.callback_query(Text(text=['to_threshold_change']))
+async def pair_change(callback: CallbackQuery):
+    id2settings[callback.from_user.id]['state'] = 'in_threshold_change'
+    await callback.message.answer('Введите, насколько должен произойти скачок в процентах, чтобы вам пришло уведомление. \nCейчас выбрано - '
+                                f'{id2settings[callback.from_user.id]["threshold"]}.')
+    await callback.answer()
 
 
 @router.message(f.InPairChange(id2settings))
@@ -201,3 +205,24 @@ async def in_pair_change(message: Message):
         await message.answer('Новая валютная пара успешно добавлена!')
     else:
         await message.answer('Такой пары нет(\n Нажмите на /all_pairs или /usdt_pairs чтобы посмотреть список доступных пар')
+
+
+@router.message(f.InThresholdChange(id2settings))
+async def in_threshold_change(message: Message):
+    try:
+        new_threshold = float(message.text)
+        id2settings[message.from_user.id]['state'] = 'in_menu'
+        id2settings[message.from_user.id]['threshold'] = new_threshold
+        await message.answer('Вы успешно поменяли!')
+    except ValueError:
+        await message.answer('Вы ввели не число. Попробуйте ещё раз')
+
+
+
+
+@router.message(Command(commands=['all_pairs','usdt_pairs']))
+async def show_list(msg: Message):
+    if msg.text.split('/')[0]=='all_pairs':
+        await msg.answer('Первые 20 пар:\n'+'\n'.join(every_pair_set[:20]))
+    else:
+        await msg.answer('Первые 20 пар:\n'+'\n'.join(usdt_pairs_set[:20]))
