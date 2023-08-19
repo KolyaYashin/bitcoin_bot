@@ -33,8 +33,10 @@ async def start(msg: Message):
 
 @router.message(Command(commands=['go']))
 async def go(msg:Message):
+    ban = 0
     while True:
-        minutes = 30
+        ban-=1
+        minutes = 5
         global y
         y=await extract_data(id2settings[msg.from_user.id]['pair'])
         draw_figure('fig.jpg',12*5,6)
@@ -42,11 +44,13 @@ async def go(msg:Message):
         new_price = y.iloc[-1]
         change_percent = (1-new_price/old_price)*100
         change_percent_abs = abs(change_percent)
-        if change_percent_abs>id2settings[msg.from_user.id]['threshold']:
+        if change_percent_abs>id2settings[msg.from_user.id]['threshold'] and ban<=0:
             for id in ALLOW_USERS:
                 if change_percent<0:
+                    ban=6
                     await bot.send_message(id,f'В ближайшие полчаса ожидается повышение на {change_percent:.{3}} процентов')
                 else:
+                    ban=6
                     await bot.send_message(id,f'В ближайшие полчаса ожидается понижение на {change_percent:.{3}} процентов')
         await asyncio.sleep(minutes*60-15)
 
@@ -92,7 +96,7 @@ async def show_prices(y,msg: Message, count):
     sns.set()
     message = f'Курс BTC-USD за прошлые {count/12} часов:\n'
     for j,i in enumerate(reversed(y.iloc[-count-6:-6].index)):
-        if j%6==0:
+        if j==0:
             message+=f'Курс за {str(i)}: {y[i]}\n'
     await msg.answer(message)
     draw_figure('fig.jpg',count,6)
