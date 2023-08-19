@@ -97,7 +97,7 @@ async def show_prices(y,msg: Message, count):
     sns.set()
     message = f'Курс BTC-USD за прошлые {count/12} часов:\n'
     for j,i in enumerate(reversed(y.iloc[-count-6:-6].index)):
-        if j==0:
+        if j%6==0:
             message+=f'Курс за {str(i)}: {y[i]}\n'
     await msg.answer(message)
 
