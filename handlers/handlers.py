@@ -17,6 +17,7 @@ from keyboard.buttons import settings_keyboard
 from settings import every_pair_set, usdt_pairs_set
 import asyncio
 from create_bot import bot
+import requests
 
 warnings.filterwarnings('ignore')
 
@@ -44,13 +45,13 @@ async def go(msg:Message):
         new_price = y.iloc[-1]
         change_percent = (1-new_price/old_price)*100
         change_percent_abs = abs(change_percent)
-        if change_percent_abs>id2settings[msg.from_user.id]['threshold'] and ban<=0:
-            for id in ALLOW_USERS:
+        for id in ALLOW_USERS:
+            if change_percent_abs>id2settings[id]['threshold'] and ban<=0:
                 if change_percent<0:
-                    ban=6
+                    ban=3
                     await bot.send_message(id,f'В ближайшие полчаса ожидается повышение на {change_percent:.{3}} процентов')
                 else:
-                    ban=6
+                    ban=3
                     await bot.send_message(id,f'В ближайшие полчаса ожидается понижение на {change_percent:.{3}} процентов')
         await asyncio.sleep(minutes*60-15)
 
@@ -99,6 +100,10 @@ async def show_prices(y,msg: Message, count):
         if j==0:
             message+=f'Курс за {str(i)}: {y[i]}\n'
     await msg.answer(message)
+
+    now = dt.datetime.now().time()
+    response = requests.get('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
+    await msg.answer(f'Цена за {now}: {response.json()["price"]}')
     draw_figure('fig.jpg',count,6)
 
 
@@ -129,7 +134,7 @@ async def rate_new(msg: Message):
 @router.message(Command(commands=['show']))
 async def show(msg: Message):
     try:
-        await show_prices(y,msg,12*5)
+        await show_prices(y,msg,12*2)
         await msg.answer('Теперь вы можете нажать либо /predict, либо /visualize')
     except NameError:
         await msg.answer('Вы ещё не получили данные. Нажмите /get')
