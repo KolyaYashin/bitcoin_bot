@@ -1,20 +1,14 @@
 from aiogram import Router
-from aiogram.filters import Command, Text
-from aiogram.types import Message, CallbackQuery
-from lexicon.lexicon_ru import LEXICON_RU as ru
-import filters.filters as f
+from aiogram.filters import Command
+from aiogram.types import Message
 from config import ALLOW_USERS
-from model import extract_and_fit
 from model import dt
-from model import pd
 from model_upgrade import extract_data
 import warnings
 import seaborn as sns
 from aiogram.types import FSInputFile
 from matplotlib.pyplot import clf
 from settings import id2settings
-from keyboard.buttons import settings_keyboard
-from settings import every_pair_set, usdt_pairs_set
 import asyncio
 from create_bot import bot
 import requests
@@ -38,9 +32,11 @@ async def go(msg:Message):
         for id in ALLOW_USERS:
             if change_percent_abs>id2settings[id]['threshold']:
                 if change_percent<0:
-                    await bot.send_message(id,f'В ближайшие полчаса ожидается повышение на {change_percent_abs:.{3}} процентов')
+                    await bot.send_message(id,f'В ближайшие полчаса ожидается <b>повышение</b> на {change_percent_abs:.{3}} процентов.\n'+
+                                            +f'Старая цена - <em>{old_price:.7}</em>. После повышения - <em>{new_price:.7}</em>.')
                 else:
-                    await bot.send_message(id,f'В ближайшие полчаса ожидается понижение на {change_percent:.{3}} процентов')
+                    await bot.send_message(id,f'В ближайшие полчаса ожидается <b>понижение</b> на {change_percent:.{3}} процентов'+
+                                            +f'Старая цена - <em>{old_price:.7}</em>. После понижения - <em>{new_price:.7}</em>')
         await asyncio.sleep(minutes*60-15)
 
 
@@ -60,7 +56,7 @@ async def show_prices(y,msg: Message, count):
     sns.set()
     message = ''
     for _,i in enumerate(reversed(y.iloc[-count-6:-6].index)):
-        message+=f'Курс за {str(i.time().replace(microsecond=0))}: <b>{y[i]}</b>\n'
+        message+=f'Курс за {str(i.time().replace(microsecond=0))}: <b>{y[i]:.8}</b>\n'
     await msg.answer(message)
     show_current_price(msg)
     draw_figure('fig.jpg',12*count,6)
@@ -77,13 +73,13 @@ async def rate_new(msg: Message):
     await show_prices(y,msg,12)
     await msg.answer('Теперь вы можете нажать либо /predict, либо /visualize')
 
+
 @model_router.message(Command(commands=['show']))
 async def show(msg: Message):
     try:
         await show_prices(y,msg,6)
-        await msg.answer('Теперь вы можете нажать либо /predict, либо /visualize')
     except NameError:
-        await msg.answer('Вы ещё не получили данные. Нажмите /get')
+        await msg.answer('<em>Вы ещё не получили данные.</em> \nНажмите /get')
 
 
 @model_router.message(Command(commands=['current']))
@@ -99,14 +95,14 @@ async def predict_price(msg: Message):
         new_price = y.iloc[-1]
         message = 'Ожидаемый курс на следующие полчаса:\n'
         for i in range(1,7):
-            message+=f'Предсказанная цена за {y.index[-i]} - {y.iloc[-i]}.\n'
+            message+=f'Предсказанная цена за {y.index[-i].time().replace(microsecond=0)} - <b>{y.iloc[-i]}</b>.\n'
         if new_price>old_price:
-            message+=f'За полчаса произойдёт повышение на {(new_price/old_price-1)*100} процентов.'
+            message+=f'За полчаса должно произойти <b>повышение</b> на {(new_price/old_price-1)*100:.3} процентов.'
         else:
-            message+=f'За полчаса произойдёт понижение на {-(new_price/old_price-1)*100} процентов.'
+            message+=f'За полчаса должно произойти <b>понижение</b> на {-(new_price/old_price-1)*100:.3} процентов.'
         await msg.answer(message)
     except NameError:
-        await msg.answer('Вы ещё не получили данные. Нажмите /get')
+        await msg.answer('<em>Вы ещё не получили данные.</em> \nНажмите /get')
 
 
 
