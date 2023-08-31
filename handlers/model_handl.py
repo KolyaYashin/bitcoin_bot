@@ -32,11 +32,11 @@ async def go(msg:Message):
         for id in ALLOW_USERS:
             if change_percent_abs>id2settings[id]['threshold']:
                 if change_percent<0:
-                    await bot.send_message(id,f'В ближайшие полчаса ожидается <b>повышение</b> на {change_percent_abs:.{3}} процентов.\n'+
-                                            +f'Старая цена - <em>{old_price:.7}</em>. После повышения - <em>{new_price:.7}</em>.')
+                    await bot.send_message(id,f'В ближайшие полчаса ожидается <b>повышение</b> на {change_percent_abs:.{3}} процентов.\n'
+                                            f'Старая цена - <em>{old_price:.7}</em>. После повышения - <em>{new_price:.7}</em>.')
                 else:
-                    await bot.send_message(id,f'В ближайшие полчаса ожидается <b>понижение</b> на {change_percent:.{3}} процентов'+
-                                            +f'Старая цена - <em>{old_price:.7}</em>. После понижения - <em>{new_price:.7}</em>')
+                    await bot.send_message(id,f'В ближайшие полчаса ожидается <b>понижение</b> на {change_percent:.{3}} процентов'
+                                            f'Старая цена - <em>{old_price:.7}</em>. После понижения - <em>{new_price:.7}</em>')
         await asyncio.sleep(minutes*60-15)
 
 
