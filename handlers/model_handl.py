@@ -35,7 +35,7 @@ async def go(msg:Message):
                     await bot.send_message(id,f'В ближайшие полчаса ожидается <b>повышение</b> на {change_percent_abs:.{3}} процентов.\n'
                                             f'Старая цена - <em>{old_price:.7}</em>. После повышения - <em>{new_price:.7}</em>.')
                 else:
-                    await bot.send_message(id,f'В ближайшие полчаса ожидается <b>понижение</b> на {change_percent:.{3}} процентов'
+                    await bot.send_message(id,f'В ближайшие полчаса ожидается <b>понижение</b> на {change_percent:.{3}} процентов.\n'
                                             f'Старая цена - <em>{old_price:.7}</em>. После понижения - <em>{new_price:.7}</em>')
         await asyncio.sleep(minutes*60-15)
 
